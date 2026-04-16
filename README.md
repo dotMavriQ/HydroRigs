@@ -93,17 +93,6 @@ That is the actual thesis of the tool: maximize utility, minimize waste.
 
 It is also what makes the status line valuable. The point is not just to show that a rig is blocked. The point is to show when you should switch down to free Gemini models, fall back to included Copilot models like GPT-5 mini, or wait for Claude or Codex to come back online before you spend money or premium requests unnecessarily.
 
-## Design Rules
-
-HydroRigs is deliberately narrow:
-
-- no fake precision
-- no invented quotas
-- no pretending a provider is pollable when it is not
-- no giant interface when a one-line status string will do
-
-If a provider exposes a real signal, HydroRigs uses it. If it only exposes a limit event, HydroRigs works from that. If a tool is not actually available on the machine, it stays out of the display.
-
 ## Installation
 
 Clone the repo and run:
