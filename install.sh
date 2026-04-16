@@ -8,7 +8,7 @@ CONFIG_DIR="$HOME/.config/hydrorigs"
 BIN_PATH="/usr/local/bin/hydrorigs"
 
 echo "Installing dependencies..."
-pip install pyyaml textual --quiet
+pip install pyyaml --quiet
 
 # Create a proper entry point in /usr/local/bin
 echo "Setting up CLI entry point..."
@@ -54,4 +54,4 @@ if config_path.exists():
 
 echo "Aliases generated in $ALIAS_FILE."
 echo "To activate, add 'source $ALIAS_FILE' to your .bashrc or .zshrc."
-echo "HydroRigs setup complete. Run 'hydrorigs ui' to see the status."
+echo "HydroRigs setup complete. Run 'hydrorigs status' to see the status."
