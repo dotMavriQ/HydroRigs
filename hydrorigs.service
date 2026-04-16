@@ -1,0 +1,12 @@
+[Unit]
+Description=HydroRigs AI Rate-Limit Management Daemon
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -m hydrorigs.cli daemon
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
