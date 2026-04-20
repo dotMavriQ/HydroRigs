@@ -35,6 +35,11 @@ def has_command(cmd):
 
 
 def is_available(name, rig_conf):
+    # If it's already in the DB, we want to show it even if env vars are missing 
+    # (e.g. running in Waybar without full shell env)
+    if get_rig(name):
+        return True
+
     cmd = rig_conf.get("cmd") or name
 
     if name == "gh":

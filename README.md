@@ -110,7 +110,6 @@ HydroRigs is centered around a few straightforward commands:
 - `hydrorigs status`
 - `hydrorigs sync`
 - `hydrorigs daemon`
-- `hydrorigs ui`
 - `hydrorigs wrap ...`
 
 The important one for most people is `status`. That is the line you feed into Waybar.
