@@ -12,6 +12,11 @@ RATE_LIMIT_PATTERNS = (
     "out of extra usage",
     "all premium requests available",
     "capacity exceeded",
+    "usage is limited",
+    "reached your usage limit",
+    "out of free messages",
+    "no more messages",
+    "available again at",
 )
 
 
@@ -27,7 +32,7 @@ def parse_clock_time(text, now_ts=None):
     now_ts = time.time() if now_ts is None else now_ts
     now = datetime.fromtimestamp(now_ts)
     match = re.search(
-        r"\b(?:try again|available again|resets?)\s+(?:at\s+)?(\d{1,2}):(\d{2})\s*([ap]m)\b",
+        r"\b(?:try again|available again|resets?|until|available)\s+(?:at\s+)?(\d{1,2})(?::(\d{2}))?\s*([ap]m)\b",
         text,
         re.I,
     )
@@ -35,7 +40,7 @@ def parse_clock_time(text, now_ts=None):
         return None
 
     hour = int(match.group(1))
-    minute = int(match.group(2))
+    minute = int(match.group(2)) if match.group(2) else 0
     ampm = match.group(3).lower()
 
     if ampm == "pm" and hour < 12:
@@ -44,7 +49,7 @@ def parse_clock_time(text, now_ts=None):
         hour = 0
 
     target = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
-    if target.timestamp() <= now_ts:
+    if "tomorrow" in text.lower() or target.timestamp() <= now_ts:
         target = target.fromtimestamp(now_ts + 86400).replace(
             hour=hour,
             minute=minute,
@@ -57,7 +62,26 @@ def parse_clock_time(text, now_ts=None):
 def parse_cooldown(text, now_ts=None):
     now_ts = time.time() if now_ts is None else now_ts
     text = text.replace("\xa0", " ")
+    text = re.sub(r'\b(\d+)(?:st|nd|rd|th)\b', r'\1', text, flags=re.I)
     months_pattern = r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
+
+    mdyt_match = re.search(months_pattern + r"\s+(\d+),\s+(\d{4})\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)", text, re.I)
+    if mdyt_match:
+        month_str = mdyt_match.group(1).capitalize()
+        day = int(mdyt_match.group(2))
+        year = int(mdyt_match.group(3))
+        hour = int(mdyt_match.group(4))
+        minute = int(mdyt_match.group(5) or 0)
+        ampm = mdyt_match.group(6).lower()
+        if ampm == "pm" and hour < 12:
+            hour += 12
+        if ampm == "am" and hour == 12:
+            hour = 0
+        try:
+            dt = datetime(year, datetime.strptime(month_str, "%b").month, day, hour, minute)
+            return max(0, dt.timestamp() - now_ts)
+        except Exception:
+            pass
 
     mdy_match = re.search(months_pattern + r"\s+(\d+),\s+(\d{4})", text, re.I)
     if mdy_match:
@@ -112,17 +136,21 @@ def parse_cooldown(text, now_ts=None):
                     total_sec += value
             return total_sec
 
-        simple = re.search(r"(\d+(?:\.\d+)?)\s*(s|sec|seconds|m|min|minutes|h|hour|hours)?", raw)
+        simple = re.search(r"\b(\d+(?:\.\d+)?)\s*(s|sec|seconds|m|min|minutes|h|hour|hours)?\b", raw)
         if simple:
             value = float(simple.group(1))
             unit = simple.group(2)
             if unit:
+                unit = unit.lower()
                 if unit.startswith("h"):
                     return value * 3600
                 if unit.startswith("m"):
                     return value * 60
                 return value
-            return value
+            
+            # Only return naked value if it's the ONLY thing in raw or it's clearly a number
+            if re.fullmatch(r"\d+(?:\.\d+)?", raw.strip()):
+                return value
 
     iso_match = re.search(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2}))", text)
     if iso_match:
