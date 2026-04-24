@@ -2,6 +2,8 @@
 
 # HydroRigs
 
+<p align="center"><img src="whenwillyoutryrigs.png" alt="When will you try rigs?" width="100%" /></p>
+
 HydroRigs is a small status and monitoring tool for people who want to maximize the utility of cheap, free-tier, and quota-limited AI tooling.
 
 The point is simple: use the rigs you already have, use them hard, and stop wasting expensive requests because one provider quietly hit a limit before another one did.
